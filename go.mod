@@ -1,9 +1,10 @@
-module eth-proof-of-existence-cli
+module github.com/jdiuwe/eth-proof-of-existence
 
 go 1.21
 
 require (
 	github.com/ethereum/go-ethereum v1.13.2
+	github.com/google/uuid v1.3.1
 	github.com/urfave/cli/v2 v2.25.7
 )
 
@@ -22,7 +23,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/holiman/uint256 v1.2.3 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect

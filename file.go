@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +23,13 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type File struct {
+	UUID    uuid.UUID  `json:"uuid"`
+	Name    string     `json:"name"`
+	HashSum string     `json:"hashsum"`
+	Created *time.Time `json:"created,omitempty"`
+}
+
 func ActionFileAdd(ctx *cli.Context) error {
 	privateKeyHex := ctx.Value("private_key")
 	privateKey, err := ethcrypto.HexToECDSA(privateKeyHex.(string))
@@ -38,6 +46,7 @@ func ActionFileAdd(ctx *cli.Context) error {
 	filePath := ctx.Value("file")
 	hash := fileHash(filePath.(string))
 	fileBasename := filepath.Base(filePath.(string))
+	fmt.Printf("[%s]\n", fileBasename)
 	fileUUID := generateUUID(fileBasename)
 
 	nodeURL := ctx.Value("node_url")
@@ -93,7 +102,84 @@ func ActionFileAdd(ctx *cli.Context) error {
 	fmt.Println("transaction id:", add.Hash().Hex())
 
 	return nil
+}
 
+func ActionFileVerify(ctx *cli.Context) error {
+	contractAddressHex := ctx.Value("contract_address")
+	contractAddress := common.HexToAddress(contractAddressHex.(string))
+
+	filePath := ctx.Value("file")
+	fileBasename := filepath.Base(filePath.(string))
+	fileUUID := generateUUID(fileBasename)
+	hash := fileHash(filePath.(string))
+
+	verifyFile := &File{
+		UUID:    fileUUID,
+		Name:    fileBasename,
+		HashSum: fmt.Sprintf("%x", hash),
+	}
+
+	nodeURL := ctx.Value("node_url")
+	backend, err := NewNetworkBackend(nodeURL.(string))
+	if err != nil {
+		return fmt.Errorf("NewNetworkBackend error: %w", err)
+	}
+
+	instance, err := NewStore(contractAddress, backend)
+	if err != nil {
+		return fmt.Errorf("NewStore error: %w", err)
+	}
+
+	key := [16]byte(fileUUID[:])
+
+	fName, fHash, fCreated, err := instance.Get(&bind.CallOpts{}, key)
+	if err != nil {
+		return fmt.Errorf("Add error: %w", err)
+	}
+
+	name := make([]byte, len(fName))
+	n, err := base64.StdEncoding.Decode(name, fName)
+	if err != nil {
+		return fmt.Errorf("Decode error: %w", err)
+	}
+
+	name = name[0:n]
+
+	created := time.Unix(int64(fCreated), 0)
+
+	checksumMatch := hash == fHash
+	switch checksumMatch {
+	case true:
+		fmt.Println("+++ checksums match +++")
+	case false:
+		fmt.Println("--- checksums don't match ---")
+	}
+
+	onChainFile := &File{
+		UUID:    fileUUID,
+		Name:    string(name),
+		HashSum: fmt.Sprintf("%x", hash),
+		Created: &created,
+	}
+
+	fmt.Println("--------------------")
+	fmt.Println("verify file metadata:")
+	prettyPrint(verifyFile)
+	fmt.Println("file metadata found on-chain:")
+	prettyPrint(onChainFile)
+
+	return nil
+}
+
+func prettyPrint(data interface{}) {
+	fmt.Println("--------------------")
+	b, err := json.MarshalIndent(data, "", " ")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(b))
+	fmt.Println("--------------------")
 }
 
 func generateUUID(filename string) uuid.UUID {
@@ -112,6 +198,5 @@ func fileHash(file string) [32]byte {
 		log.Fatal(err)
 	}
 
-	//return fmt.Printf("%x", h.Sum(nil))
 	return [32]byte(h.Sum(nil))
 }

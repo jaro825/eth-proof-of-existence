@@ -151,9 +151,7 @@ func main() {
 						Name:    "verify",
 						Aliases: []string{"v"},
 						Usage:   "verify proof of file on-chain",
-						Action: func(context *cli.Context) error {
-							return nil
-						},
+						Action:  ActionFileVerify,
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:      "file",
@@ -163,10 +161,16 @@ func main() {
 								TakesFile: true,
 							},
 							&cli.StringFlag{
-								Name:     "address",
+								Name:     "contract_address",
 								Usage:    "address of a deployed contract",
 								Required: true,
 								Aliases:  []string{"a"},
+							},
+							&cli.StringFlag{
+								Name:     "node_url",
+								Usage:    "ethereum json-rpc node url",
+								Required: true,
+								Aliases:  []string{"n"},
 							},
 						},
 					},
