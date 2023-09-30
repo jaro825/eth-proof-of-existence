@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -56,27 +55,19 @@ func ActionWalletCreate(_ *cli.Context) error {
 		return fmt.Errorf("could not create wallet: %w", err)
 	}
 
-	fmt.Println("wallet created:")
-
-	b, err := json.MarshalIndent(wallet, "", "  ")
-	if err != nil {
-		return fmt.Errorf("could not marshal wallet: %w", err)
-	}
-
 	fmt.Println("--------------------")
-	fmt.Printf("%s\n", string(b))
+	fmt.Println("wallet created:")
+	prettyPrint(wallet)
 
 	return nil
 }
 
 func ActionWalletBalance(ctx *cli.Context) error {
-	addressHex := ctx.Value("address")
+	addressHex := getStringParamFromContext(ctx, "address")
+	account := common.HexToAddress(addressHex)
 
-	account := common.HexToAddress(addressHex.(string))
-
-	nodeURL := ctx.Value("node_url")
-
-	backend, err := NewNetworkBackend(nodeURL.(string))
+	nodeURL := getStringParamFromContext(ctx, "node_url")
+	backend, err := NewNetworkBackend(nodeURL)
 	if err != nil {
 		return fmt.Errorf("could not create network connection to backend: %w", err)
 	}

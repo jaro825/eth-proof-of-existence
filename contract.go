@@ -20,20 +20,17 @@ type Contract struct {
 }
 
 func ActionContractDeploy(ctx *cli.Context) error {
-	privateKeyHex := ctx.Value("private_key")
-
-	privateKey, err := ethcrypto.HexToECDSA(privateKeyHex.(string))
+	privateKeyHex := getStringParamFromContext(ctx, "private_key")
+	privateKey, err := ethcrypto.HexToECDSA(privateKeyHex)
 	if err != nil {
 		return fmt.Errorf("HexToECDSA error: %w", err)
 	}
 
-	walletAddressHex := ctx.Value("address")
+	walletAddressHex := getStringParamFromContext(ctx, "address")
+	address := common.HexToAddress(walletAddressHex)
 
-	address := common.HexToAddress(walletAddressHex.(string))
-
-	nodeURL := ctx.Value("node_url")
-
-	backend, err := NewNetworkBackend(nodeURL.(string))
+	nodeURL := getStringParamFromContext(ctx, "node_url")
+	backend, err := NewNetworkBackend(nodeURL)
 	if err != nil {
 		return fmt.Errorf("NewNetworkBackend error: %w", err)
 	}
@@ -46,7 +43,7 @@ func ActionContractDeploy(ctx *cli.Context) error {
 		return fmt.Errorf("PendingNonceAt error: %w", err)
 	}
 
-	gasPrice, err := backend.SuggestGasPrice(context.Background())
+	gasPrice, err := backend.SuggestGasPrice(reqCtx)
 	if err != nil {
 		return fmt.Errorf("SuggestGasPrice error: %w", err)
 	}
@@ -79,13 +76,11 @@ func ActionContractDeploy(ctx *cli.Context) error {
 }
 
 func ActionContractStatus(ctx *cli.Context) error {
-	contractAddressHex := ctx.Value("address")
+	contractAddressHex := getStringParamFromContext(ctx, "address")
+	address := common.HexToAddress(contractAddressHex)
 
-	address := common.HexToAddress(contractAddressHex.(string))
-
-	nodeURL := ctx.Value("node_url")
-
-	backend, err := NewNetworkBackend(nodeURL.(string))
+	nodeURL := getStringParamFromContext(ctx, "node_url")
+	backend, err := NewNetworkBackend(nodeURL)
 	if err != nil {
 		return fmt.Errorf("NewNetworkBackend error: %w", err)
 	}

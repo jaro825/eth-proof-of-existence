@@ -31,27 +31,26 @@ type File struct {
 }
 
 func ActionFileAdd(ctx *cli.Context) error {
-	privateKeyHex := ctx.Value("private_key")
-	privateKey, err := ethcrypto.HexToECDSA(privateKeyHex.(string))
+	privateKeyHex := getStringParamFromContext(ctx, "private_key")
+	privateKey, err := ethcrypto.HexToECDSA(privateKeyHex)
 	if err != nil {
 		return fmt.Errorf("HexToECDSA error: %w", err)
 	}
 
-	contractAddressHex := ctx.Value("contract_address")
-	contractAddress := common.HexToAddress(contractAddressHex.(string))
+	contractAddressHex := getStringParamFromContext(ctx, "contract_address")
+	contractAddress := common.HexToAddress(contractAddressHex)
 
-	ownerAddressHex := ctx.Value("contract_owner")
-	ownerAddress := common.HexToAddress(ownerAddressHex.(string))
+	ownerAddressHex := getStringParamFromContext(ctx, "contract_owner")
+	ownerAddress := common.HexToAddress(ownerAddressHex)
 
-	filePath := ctx.Value("file")
-	hash := fileHash(filePath.(string))
-	fileBasename := filepath.Base(filePath.(string))
+	filePath := getStringParamFromContext(ctx, "file")
+	hash := fileHash(filePath)
+	fileBasename := filepath.Base(filePath)
 	fmt.Printf("[%s]\n", fileBasename)
 	fileUUID := generateUUID(fileBasename)
 
-	nodeURL := ctx.Value("node_url")
-
-	backend, err := NewNetworkBackend(nodeURL.(string))
+	nodeURL := getStringParamFromContext(ctx, "node_url")
+	backend, err := NewNetworkBackend(nodeURL)
 	if err != nil {
 		return fmt.Errorf("NewNetworkBackend error: %w", err)
 	}
@@ -104,14 +103,24 @@ func ActionFileAdd(ctx *cli.Context) error {
 	return nil
 }
 
-func ActionFileVerify(ctx *cli.Context) error {
-	contractAddressHex := ctx.Value("contract_address")
-	contractAddress := common.HexToAddress(contractAddressHex.(string))
+func getStringParamFromContext(ctx *cli.Context, param string) string {
+	value := ctx.Value(param)
 
-	filePath := ctx.Value("file")
-	fileBasename := filepath.Base(filePath.(string))
+	if v, ok := value.(string); ok && v != "" {
+		return v
+	}
+
+	panic("parameter is empty")
+}
+
+func ActionFileVerify(ctx *cli.Context) error {
+	contractAddressHex := getStringParamFromContext(ctx, "contract_address")
+	contractAddress := common.HexToAddress(contractAddressHex)
+
+	filePath := getStringParamFromContext(ctx, "file")
+	fileBasename := filepath.Base(filePath)
 	fileUUID := generateUUID(fileBasename)
-	hash := fileHash(filePath.(string))
+	hash := fileHash(filePath)
 
 	verifyFile := &File{
 		UUID:    fileUUID,
@@ -119,8 +128,8 @@ func ActionFileVerify(ctx *cli.Context) error {
 		HashSum: fmt.Sprintf("%x", hash),
 	}
 
-	nodeURL := ctx.Value("node_url")
-	backend, err := NewNetworkBackend(nodeURL.(string))
+	nodeURL := getStringParamFromContext(ctx, "node_url")
+	backend, err := NewNetworkBackend(nodeURL)
 	if err != nil {
 		return fmt.Errorf("NewNetworkBackend error: %w", err)
 	}
