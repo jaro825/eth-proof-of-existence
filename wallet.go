@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -16,9 +17,10 @@ import (
 )
 
 type Wallet struct {
-	PrivateKeyHex string `json:"private_key_hex"`
-	PublicKeyHex  string `json:"public_key_hex"`
-	AddressHex    string `json:"address_hex"`
+	PrivateKeyHex string   `json:"private_key_hex,omitempty"`
+	PublicKeyHex  string   `json:"public_key_hex,omitempty"`
+	AddressHex    string   `json:"address_hex,omitempty"`
+	Balance       *big.Int `json:"balance,omitempty"`
 }
 
 func CreateNewWallet() (*Wallet, error) {
@@ -80,8 +82,13 @@ func ActionWalletBalance(ctx *cli.Context) error {
 		return fmt.Errorf("could not get balance: %w", err)
 	}
 
+	wallet := &Wallet{
+		AddressHex: addressHex,
+		Balance:    balance,
+	}
+
 	fmt.Println("--------------------")
-	fmt.Printf("the balance of %s is %d wei\n", addressHex, balance)
+	prettyPrint(wallet)
 
 	return nil
 }

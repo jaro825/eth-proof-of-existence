@@ -26,7 +26,8 @@ import (
 type File struct {
 	UUID    uuid.UUID  `json:"uuid"`
 	Name    string     `json:"name"`
-	HashSum string     `json:"hashsum"`
+	HashSum string     `json:"hashsum,omitempty"`
+	TxId    string     `json:"tx_id,omitempty"`
 	Created *time.Time `json:"created,omitempty"`
 }
 
@@ -46,7 +47,6 @@ func ActionFileAdd(ctx *cli.Context) error {
 	filePath := getStringParamFromContext(ctx, "file")
 	hash := fileHash(filePath)
 	fileBasename := filepath.Base(filePath)
-	fmt.Printf("[%s]\n", fileBasename)
 	fileUUID := generateUUID(fileBasename)
 
 	nodeURL := getStringParamFromContext(ctx, "node_url")
@@ -96,9 +96,19 @@ func ActionFileAdd(ctx *cli.Context) error {
 		return fmt.Errorf("Add error: %w", err)
 	}
 
+	timestamp := time.Unix(int64(created), 0)
+
+	file := &File{
+		UUID:    fileUUID,
+		Name:    fileBasename,
+		HashSum: fmt.Sprintf("%x", hash),
+		TxId:    add.Hash().Hex(),
+		Created: &timestamp,
+	}
+
 	fmt.Println("--------------------")
 	fmt.Println("proof of file added:")
-	fmt.Println("transaction id:", add.Hash().Hex())
+	prettyPrint(file)
 
 	return nil
 }

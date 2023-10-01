@@ -96,39 +96,142 @@ and file location URL could be stored in media metadata struct in Solidity.
 
 ### Examples.
 
+### set environment variables
+```shell
+export NODE_URL=https://sepolia.infura.io/v3/8af265c9b1264b30bc4d6820d99adc53
+```
+
 ### create a wallet
 Only required if you don't already have an Ethereum wallet or want to create a new one just for testing. Remember that new wallet
 will have to be funded. Use Sepolia testnet and get some test coins from one of many online faucets available.  
 ```shell
-
+ % ./eth-smart-contract-cli wallet create
+--------------------
+wallet created:
+--------------------
+{
+ "private_key_hex": "0x292b226995dc3dfb53ba0953f0bc717e221a9c8d9cb4f3ad5dfa5ef125b03860",
+ "public_key_hex": "0x040dd7015c247d38a0fab03b79886650b08b86d9a563ef01a32a1c8bf56ecc326e1338d1d64b3f824b7b7e334a0fd123930632b2ef399a98e8c3bad67a55f46f0a",
+ "address_hex": "0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f"
+}
+--------------------
 ```
+
+### set environment variables
+```shell
+export PRIVATE_KEY=292b226995dc3dfb53ba0953f0bc717e221a9c8d9cb4f3ad5dfa5ef125b03860
+```
+
+Once you create a wallet make sure you send some coins to it.
 
 ### check wallet balance
 ```shell
-
+ % ./eth-smart-contract-cli wallet balance --address=0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f 
+--------------------
+{
+ "address_hex": "0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f",
+ "balance": 10000000000000000
+}
+--------------------
 ```
 
 ### deploy a contract
 ```shell
-
+ % ./eth-smart-contract-cli contract deploy --address=0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f
+--------------------
+contract deployed:
+--------------------
+{
+ "address": "0x967B1116887667c40c4776D43e6996e1749FFc6F",
+ "tx_id": "0xb3d9aaa76f0a6a5bd74c4572d22a815833d3ac890d58da5f8051105608626452"
+}
+--------------------
 ```
 
 ### check the status of a deployed contract
 ```shell
+ % ./eth-smart-contract-cli contract status --address=0x967B1116887667c40c4776D43e6996e1749FFc6F
+--------------------
+contract status:
+--------------------
+{
+ "address": "0x967B1116887667c40c4776D43e6996e1749FFc6F",
+ "owner_address": "0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f"
+}
+--------------------
+```
 
+### check the wallet balance again
+```shell
+ % ./eth-smart-contract-cli wallet balance --address=0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f --node_url=https://sepolia.infura.io/v3/8af265c9b1264b30bc4d6820d99adc53  
+--------------------
+{
+ "address_hex": "0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f",
+ "balance": 9999999951921447
+}
+--------------------
 ```
 
 ### add media file
 ```shell
+ % ./eth-smart-contract-cli file add --contract_address=0x967B1116887667c40c4776D43e6996e1749FFc6F --file=test.pdf --contract_owner=0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f
+--------------------
+proof of file added:
+--------------------
+{
+ "uuid": "8c361a49-261f-5c65-9666-9d1ece5848af",
+ "name": "test.pdf",
+ "hashsum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "tx_id": "0x0a00f11bf566328a4f29bdb9a9813421561d9898479dbef31617556892094672",
+ "created": "2023-10-01T13:00:10+01:00"
+}
+--------------------
+```
 
+### check the balance 
+```shell
+ % ./eth-smart-contract-cli wallet balance --address=0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f --node_url=https://sepolia.infura.io/v3/8af265c9b1264b30bc4d6820d99adc53      
+--------------------
+{
+ "address_hex": "0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f",
+ "balance": 9999999819633195
+}
+--------------------
 ```
 
 ### check the status of a deployed contract 
 ```shell
-
+ % ./eth-smart-contract-cli contract status --address=0x967B1116887667c40c4776D43e6996e1749FFc6F                                                                              
+--------------------
+contract status:
+--------------------
+{
+ "address": "0x967B1116887667c40c4776D43e6996e1749FFc6F",
+ "owner_address": "0xE60CD0DEbe2259f1Ef105c1E8d0090C4b843481f",
+ "proofs_stored": 1
+}
+--------------------
 ```
 
 ### verify media file
 ```shell
-
+ % ./eth-smart-contract-cli file verify --contract_address=0x967B1116887667c40c4776D43e6996e1749FFc6F --file=test.pdf                                                     
+--------------------
+verify file metadata:
+--------------------
+{
+ "uuid": "8c361a49-261f-5c65-9666-9d1ece5848af",
+ "name": "test.pdf",
+ "hashsum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
+--------------------
+file metadata found on-chain:
+--------------------
+{
+ "uuid": "8c361a49-261f-5c65-9666-9d1ece5848af",
+ "name": "test.pdf",
+ "hashsum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "created": "2023-10-01T13:00:10+01:00"
+}
+--------------------
 ```
