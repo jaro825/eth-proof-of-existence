@@ -1,4 +1,4 @@
-module github.com/jdiuwe/eth-proof-of-existence
+module github.com/jdiuwe/eth-smart-contract-cli
 
 go 1.21
 
